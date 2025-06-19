@@ -373,15 +373,6 @@ void process_input()
 }
 
 
-int check_self_collision() {
-        for (int i = 0; i < snake_length; i ++) {
-                if (head->x == snake[i].x && head->y == snake[i].y) {
-                        return 1;
-                }
-        }
-        return 0;
-}
-
 /* for every cycle, move the snake postion diagonally */
 void move_snake() {
         for (int i = snake_length - 1; i > 0; i --) {
@@ -390,12 +381,6 @@ void move_snake() {
         }
         head->x += snake_dir.x;
         head->y += snake_dir.y;
-
-        if (head->x <= 0 || head->x >= WIDTH - 1 || head->y <= 0 || head->y >= HEIGHT - 1) {
-                draw_game_over_screen(fruit_eaten);
-                endwin();
-                exit(0);
-        }
 }
 
 
@@ -488,14 +473,6 @@ void update_fruit_and_poison() {
     }
 }
 
-int check_poison_collision() {
-    for (int i = 0; i < poison_count; i++) {
-        if (head->x == poison[i].x && head->y == poison[i].y) {
-            return 1;
-        }
-    }
-    return 0;
-}
 
 int check_gameover(){
     // gameover due to wall crash
@@ -510,7 +487,7 @@ int check_gameover(){
     }
     // gameover due to poison
     for (int i=0; i<poison_count; i++){
-        if(head->x == poison[i].x && head->y == poison[i].y){
+        if(head->x == poison[i]->x && head->y == poison[i]->y){
             return 1;
         }
     }
