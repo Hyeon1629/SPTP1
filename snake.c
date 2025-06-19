@@ -16,7 +16,7 @@ typedef struct{
 	int8_t y;
 }position;
 position snake[MAX_LENGTH];//tail_x,y대체
-int snake_length = 0;
+int snake_length = 1;
 position snake_dir;//snake_x,y_direoc
 position* head = &snake[0];//snake_x,y대체
 
@@ -317,42 +317,50 @@ void process_input()
                 if (arrow_key == 'A')
                 {
                         new_dy = -1;
+			new_dx = 0;
                 }
 
                 else if (arrow_key == 'B') // 아래 방향키
                 {
                         new_dy = 1;
+			new_dx = 0;
                 }
 
                 else if (arrow_key == 'C') // 오른쪽 방향키
                 {
                         new_dx = 1;
+			new_dy = 0;
                 }
 
                 else if (arrow_key == 'D') // 왼쪽 방향키
                 {
                         new_dx = -1;
+			new_dy = 0;
                 }
         }
 
         if (ch == 'w' || ch == 'W') // W키 입력시
         {
                 new_dy = -1;
+		new_dx = 0;
         }
 
         if (ch == 's' || ch == 'S') // S키 입력시
         {
                 new_dy = 1;
+		new_dx = 0;
         }
 
         if (ch == 'a' || ch == 'A') // A키 입력시
         {
                 new_dx = -1;
+		new_dy = 0;
         }
 
         if (ch == 'd' || ch =='D') // D키 입력시
         {
                 new_dx = 1;
+		new_dy = 0;
         }
 
         // 
@@ -387,14 +395,9 @@ static bool occupied[HEIGHT][WIDTH];
 
 /* draw the snake in the bitmap */
 void mark_snake() {
-    for (int i = 0; i < snake_length; i++) {
-        int x = snake[i].x;
-        int y = snake[i].y;
-        if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT) {
-            bitmap[y][x] = 1; // 올바른 순서로 수정
-            occupied[y][x] = true; // 점유 처리
+        for (int i = 0; i < snake_length; i ++) {
+                bitmap[snake[i].x][snake[i].y] = 1;
         }
-    }
 }
 
 
@@ -485,7 +488,7 @@ int check_gameover(){
         return 1;
     }
     // gameover due to self_collision
-    for (int i=0; i<snake_length;i++){
+    for (int i=1; i<snake_length;i++){
         if(head->x == snake[i].x && head->y == snake[i].y){
             return 1;
         }
@@ -496,6 +499,7 @@ int check_gameover(){
             return 1;
         }
     }
+    return 0;
 }
 
 int main() {
