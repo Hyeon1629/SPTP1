@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <ncurses.h>
-//123123123123
+
 #define WIDTH 80
 #define HEIGHT 24
 #define MAX_POISON 20
