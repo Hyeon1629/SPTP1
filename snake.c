@@ -603,7 +603,10 @@ int main() {
                 process_input();
                 move_snake();
 
-
+                if(check_gameover()){
+                        draw_game_over_screen(fruit_eaten);
+                        break;
+                }
                 if (head->x == fruit.x && head->y == fruit.y) {
                         update_fruit_and_poison();
                 }
@@ -612,10 +615,7 @@ int main() {
                 draw_bitmap();
                 usleep(100000); // sleep 100 ms
 
-                if(check_gameover()){
-                        draw_game_over_screen(fruit_eaten);
-                        break;
-                }
+
         }
         endwin();               // end the ncurses screen
 }
