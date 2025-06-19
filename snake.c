@@ -350,68 +350,85 @@ void mark_snake() {
         }
 }
 
-void spawn_poison() {
-        for (int i = 0; i < poison_count; i++) {
-                int8_t px, py;
-                while (1) {
-                        px = (rand() % (WIDTH - 2)) + 1;
-                        py = (rand() % (HEIGHT - 2)) + 1;
+// 전역변수
+static bool occupied[HEIGHT][WIDTH];
 
-                        if (px == fruit_x && py == snake_y) {
-                                continue;
-                        }
-
-                        int overlaps_tail = 0;
-                        for (int t = 0; t < snake_length; t ++) {
-                                if (px == tail_x[t] && py == tail_y[t]) {
-                                        overlaps_tail = 1;
-                                        break;
-                                }
-                        }
-                        if (overlaps_tail) {
-                                continue;
-                        }
-                        break;
-                }
-                poison_x[i] = px;
-                poison_y[i] = py;
+// 맵 내부에 빈 칸이 하나라도 있는지 확인
+static bool free_cell() {
+    for (int y = 1; y < HEIGHT - 1; y++) {
+        for (int x = 1; x < WIDTH - 1; x++) {
+            if (!occupied[y][x]) {
+                return true;
+            }
         }
+    }
+    return false;
 }
 
+// 게임 시작 시 한 번만 호출해서 occupied 초기화
+void init_occupied() {
+    // 모든 칸 false(비어 있음)로 초기화
+    memset(occupied, 0, sizeof(occupied));
+    occupied[snake_y][snake_x] = true;
+    // 뱀 머리 초기 위치 찍기
+}
+
+// poison_count 개수만큼 독을 맵의 빈 칸에 무작위 배치
+void spawn_poison() {
+    // 빈 칸 없으면 바로 리턴
+    if (!free_cell()) return; 
+
+    for (int i = 0; i < poison_count; i++) {
+        int8_t px, py;
+        // 빈 칸이 나올 때까지 반복
+        do {
+            px = (rand() % (WIDTH - 2)) + 1;  
+            py = (rand() % (HEIGHT - 2)) + 1; 
+            // occupied[py][px]가 true면 이미 뱀, 과일, 또는 이전 독이 차지 중인것
+        } while (occupied[py][px]);
+        // 안전한 좌표[px,py]를 찾았으면 저장
+        poison_x[i] = px;
+        poison_y[i] = py;
+        // 해당 칸을 점유 처리해서 중복 배치를 방지
+        occupied[py][px] = true;
+    }
+}
+
+// 과일을 먹었을 때 : 뱀 길이 증가, 과일 재배치, 독 재배치
 void update_fruit_and_poison() {
-    fruit_eaten ++;
+    fruit_eaten++;
 
+    // 뱀 길이 늘리기
     if (snake_length < MAX_LENGTH - 1) {
-            tail_x[snake_length] = snake_x;
-            tail_y[snake_length] = snake_y;
-            snake_length ++;
+        // 꼬리 배열 끝에 새 머리 좌표 추가
+        tail_x[snake_length] = snake_x;
+        tail_y[snake_length] = snake_y;
+        snake_length++;
+        // 뱀 새 위치 점유
+        occupied[snake_y][snake_x] = true;
     }
 
-    if (poison_count > 0 && fruit_eaten % poison_increase_step == 0 && poison_count < MAX_POISON) {
-        poison_count ++;
-        }
-    while (1) {
-            int8_t fx = (rand() % (WIDTH - 2)) + 1;
-            int8_t fy = (rand() % (HEIGHT - 2)) + 1;
-            if (fx == snake_x && fy == snake_y) {
-                    continue;
-            }
-            int overlaps_tail = 0;
-            for (int t = 0; t < snake_length; t ++) {
-                    if (fx == tail_x[t] && fy == tail_y[t]) {
-                            overlaps_tail = 1;
-                            break;
-                    }
-            }
-            if (overlaps_tail) {
-                continue;
-            }
-            fruit_x = fx;
-            fruit_y = fy;
-            break;
+    // 난이도에 따라 독 개수 증가
+    if (poison_count > 0
+        && fruit_eaten % poison_increase_step == 0
+        && poison_count < MAX_POISON) {
+        poison_count++;
     }
+
+    // 새 과일 위치 찾기 (빈 칸일 때까지)
+    int8_t fx, fy;
+    do {
+        fx = (rand() % (WIDTH - 2)) + 1;
+        fy = (rand() % (HEIGHT - 2)) + 1;
+    } while (occupied[fy][fx]);
+    
+    fruit_x = fx;
+    fruit_y = fy;
+    occupied[fy][fx] = true; //과일 위치 찍기
+
+    // 독도 새로 배치
     if (poison_count > 0) {
-            spawn_poison();
+        spawn_poison();
     }
 }
 
