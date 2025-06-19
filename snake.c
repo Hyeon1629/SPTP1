@@ -494,6 +494,9 @@ int check_gameover(){
 }
 
 int main() {
+	head->x=40;
+	head->y=12;
+	snake_dir.x=0;snake_dir.y=1;
         initscr();              // initialize ncurse screen
         cbreak();               // disable the line break buffer
         nodelay(stdscr, TRUE);  // disable delay to wait keyboard inputs
