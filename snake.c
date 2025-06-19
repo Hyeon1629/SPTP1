@@ -503,6 +503,25 @@ int check_poison_collision() {
     return 0;
 }
 
+int check_gameover(){
+    // gameover due to wall crash
+    if (head->x <= 0 || head->x >= WIDTH-1 || head->y >= HEIGHT-1 || head->y <= 0){
+        return 1;
+    }
+    // gameover due to self_collision
+    for (int i=0; i<snake_length;i++){
+        if(head->x == snake[i]->x && head->y == snake[i]->y){
+            return 1;
+        }
+    }
+    // gameover due to poison
+    for (int i=0; i<poison_count; i++){
+        if(head->x == poison[i]->x && head->y == poison->y){
+            return 1;
+        }
+    }
+}
+
 int main() {
         initscr();              // initialize ncurse screen
         cbreak();               // disable the line break buffer
@@ -601,24 +620,19 @@ int main() {
                 process_input();
                 move_snake();
 
-                if (check_self_collision()) {
-                        draw_game_over_screen(fruit_eaten);
-                        endwin();
-                        exit(0);
-                }
 
                 if (snake_x == fruit_x && snake_y == fruit_y) {
                         update_fruit_and_poison();
                 }
 
-                if (poison_count > 0 && check_poison_collision()) {
-                        draw_game_over_screen(fruit_eaten);
-                        endwin();
-                        exit(0);
-                }
                 mark_snake();
                 draw_bitmap();
                 usleep(100000); // sleep 100 ms
+
+                if(check_gameover()){
+                        draw_game_over_screen(eaten);
+                        break;
+                }
         }
         endwin();               // end the ncurses screen
 }
