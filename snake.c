@@ -227,88 +227,157 @@ void clear_bitmap() {
         memset(bitmap, 0, WIDTH*HEIGHT);
 }
 
-/* draw bitmap array on the screen */
+// 맵 그리기
 void draw_bitmap() {
-        move(0, 0);             //move cursor to the top left corner
-        for (int j = 0; j < WIDTH; j ++) {
-                mvaddch(0, j, ACS_CKBOARD);
-                mvaddch(HEIGHT - 1, j, ACS_CKBOARD);
+        move(0, 0);             // 커서 맨위로 이동
+
+        // 위쪽 테두리
+        for (int i =0; i < WIDTH; i++) // i = 행
+        {
+                move(0, i);
+                addch(ACS_CKBOARD); // 체커보드 문자
         }
 
-        for (int i = 1; i < HEIGHT - 1; i++) {
-                mvaddch(i, 0, ACS_CKBOARD);
-                for (int j = 1; j < WIDTH - 1; j++) {
+        // 아래쪽 테두리
+        for (int i = 0; i < WIDTH; i++) 
+        {
+                move(HEIGHT - 1, i);
+                addch(ACS_CKBOARD);
+        }
+
+        // 왼쪽 테두리
+        for (int j = 0; j < HEIGHT; j++) // j = 열
+        {
+                move(j, 0);
+                addch(ACS_CKBOARD);
+        }
+
+        // 오른쪽 테두리
+        for (int j = 0; j < HEIGHT; j++)
+        {
+                move(j, WIDTH - 1);
+                addch(ACS_CKBOARD);
+        }
+
+        // 안쪽 시작
+
+        for (int i = 1; i < HEIGHT - 1; i++)
+        {
+                for (int j = 1; j < WIDTH - 1; j++)
+                {
+                        move(i, j)
+
                         int is_poison = 0;
-                        for (int k = 0; k < poison_count; k++) {
-                                if (j == poison_x[k] && i == poison_y[k]) {
-                                        addch('X');
+
+                        for (int k = 0; k < poison_count; k++)
+                        {
+                                if (poison[k].x == j && poison[k].y == i)
+                                {
                                         is_poison = 1;
                                         break;
                                 }
                         }
-                        if (is_poison) continue;
-                        /* fruit is F */
-                        if (j == fruit_x && i == fruit_y) {
+                        
+                        if (is_poison == 1)
+                        {
+                                addch('X');
+                        }
+
+                        else if (fruit.x == j && fruit.y == i)
+                        {
                                 addch('F');
                         }
-                        else if (bitmap[j][i]) {
-                                addch(ACS_CKBOARD);     //black
-                        } else {
-                                addch(' ');             //white
+
+                        else if (bitmap[j][i] == 1)
+                        {
+                                addch(ACS_CKBOARD);
                         }
+
+                        else
+                        {
+                                addch(' ');
+                        }
+                        
                 }
-                mvaddch(i, WIDTH - 1, ACS_CKBOARD);
         }
+
         refresh();
 }
 
-/* process keyboard inputs */
-void process_input() {
-        char ch = getch();
-        int8_t new_dx = snake_x_dir;
-        int8_t new_dy = snake_y_dir;
+// 키보드 입력
+void process_input()
+{
+        char ch = getch(); // 키보드 입력 받기
 
-        /* special character starting with 'ESC' */
-        if (ch == '\033') {
-                getch(); // skip '['
-                switch(getch()) {
-                        case 'A':       // arrow up
-                                new_dx = 0;
-                                new_dy = -1;
-                                break;
-                        case 'B':       // arrow down
-                                new_dx = 0;
-                                new_dy = 1;
-                                break;
-                        case 'C':       // arrow right
-                                new_dx = 1;
-                                new_dy = 0;
-                                break;
-                        case 'D':       // arrow left
-                                new_dx = -1;
-                                new_dy = 0;
-                                break;
-                        }
-        } else if (ch == 'w' || ch == 'W') {
-                new_dx = 0; new_dy = -1;}       // 'w' key
-        else if (ch == 's' || ch == 'S') {
-                new_dx = 0; new_dy = 1;}        // 's' key
-        else if (ch == 'a' || ch == 'A') {
-                new_dx = -1; new_dy = 0;}       // 'a' key
-        else if (ch == 'd' || ch == 'D') {
-                new_dx = 1; new_dy = 0;}        // 'd' key
+        // 전진을 위한 방향값 복사 변수
+        int8_t new_dx = head->x_dir; // 현재 x방향 복사
+        int8_t new_dy = head->y_dir; // 현재 y방향 복사
 
-        if (snake_length > 0) {
-                int8_t next_x = snake_x + new_dx;
-                int8_t next_y = snake_y + new_dy;
-                if (next_x == tail_x[0] && next_y == tail_y[0]) {
-                        return;
+        // 방향키 파트, 화살표 입력 시퀀스는 '\033[' 뒤에 위,아래,오른쪽,왼쪽 순으로 A,B,C,D 가 붙는다.
+
+        if (ch == '\033') { // 방향키인지 확인
+
+                getch(); // '[' 문자를 스킵
+                char arrow_key = getch(); // 방향키 문자 입력 받기
+
+                if (arrow_key == 'A')
+                {
+                        new_dy = -1;
+                }
+
+                else if (arrow_key == 'B') // 아래 방향키
+                {
+                        new_dy = 1;
+                }
+
+                else if (arrow_key == 'C') // 오른쪽 방향키
+                {
+                        new_dx = 1;
+                }
+
+                else if (arrow_key == 'D') // 왼쪽 방향키
+                {
+                        new_dx = -1;
                 }
         }
-        snake_x_dir = new_dx;
-        snake_y_dir = new_dy;
 
+        if (ch == 'w' || ch == 'W') // W키 입력시
+        {
+                new_dy = -1;
+        }
+
+        if (ch == 's' || ch == 'S') // S키 입력시
+        {
+                new_dy = 1;
+        }
+
+        if (ch == 'a' || ch == 'A') // A키 입력시
+        {
+                new_dx = -1;
+        }
+
+        if (ch == 'd' || ch =='D') // D키 입력시
+        {
+                new_dx = 1;
+        }
+
+        // 
+        if (snake_length > 0) // 꼬리가 있으면
+        {
+                int8_t next_x = head->x + new_dx; // 머리의 다음 위치 계산
+                int8_t next_y = head->y + new_dy; // 
+
+                if (next_x == snake[1].x && next_y == snake[1].y) // 머리 다음위치가 꼬리 위치라면
+                {
+                        return; // 움직임 종료
+                }
+        }
+
+
+        head->x_dir = new_dx; // 다음 방향 적용
+        head->y_dir = new_dy; // 
 }
+
 
 int check_self_collision() {
         for (int i = 0; i < snake_length; i ++) {
