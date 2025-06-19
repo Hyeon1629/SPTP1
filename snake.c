@@ -391,29 +391,22 @@ int check_self_collision() {
 /* for every cycle, move the snake postion diagonally */
 void move_snake() {
         for (int i = snake_length - 1; i > 0; i --) {
-                tail_x[i] = tail_x[i - 1];
-                tail_y[i] = tail_y[i - 1];
+                snake[i] = snake[i - 1];
+                //tail_y[i] = tail_y[i - 1];
         }
+        head->x += snake_dir.x;
+        head->y += snake_dir.y;
 
-        if (snake_length > 0) {
-                tail_x[0] = snake_x;
-                tail_y[0] = snake_y;
-        }
-
-        snake_x += snake_x_dir;
-        snake_y += snake_y_dir;
-
-        if (snake_x <= 0 || snake_x >= WIDTH - 1 || snake_y <= 0 || snake_y >= HEIGHT - 1) {
+        if (head->x <= 0 || head->x >= WIDTH - 1 || head->y <= 0 || head->y >= HEIGHT - 1) {
                 draw_game_over_screen(fruit_eaten);
                 endwin();
                 exit(0);
         }
 }
 
+
 /* draw the snake in the bitmap */
 void mark_snake() {
-        bitmap[snake_x][snake_y] = 1;
-
         for (int i = 0; i < snake_length; i ++) {
                 bitmap[tail_x[i]][tail_y[i]] = 1;
         }
