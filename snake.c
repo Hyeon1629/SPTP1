@@ -510,7 +510,7 @@ int check_gameover(){
     }
     // gameover due to poison
     for (int i=0; i<poison_count; i++){
-        if(head->x == poison[i]->x && head->y == poison->y){
+        if(head->x == poison[i].x && head->y == poison[i].y){
             return 1;
         }
     }
