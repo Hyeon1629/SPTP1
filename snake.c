@@ -11,30 +11,24 @@
 #define MAX_POISON 20
 #define MAX_LENGTH 1000
 
-/* Postion of the snake */
-int8_t snake_x = 40;
-int8_t snake_y = 12;
-
-/* Moving directions of the snake */
-int8_t snake_x_dir = 0;
-int8_t snake_y_dir = 1;
-
-int8_t tail_x[MAX_LENGTH];
-int8_t tail_y[MAX_LENGTH];
+typedef struct{
+	int8_t x;
+	int8_t y;
+}position;
+position snake[MAX_LENGTH];//tail_x,y대체
 int snake_length = 0;
+position snake_dir;//snake_x,y_direoc
+position* head = &snake[0];//snake_x,y대체
 
-/* directions of the fruit */
-int8_t fruit_x;
-int8_t fruit_y;
+position fruit;//fruit_x,y대체
 
-/* Position of poison */
-int8_t poison_x[MAX_POISON];
-int8_t poison_y[MAX_POISON];
+position poison[MAX_POISON];
 
 int poison_count = 1;
 int fruit_eaten = 0;
 int poison_increase_step = 2;
 int game_mode = 0;
+
 
 /* bitmap to draw at the screen */
 uint8_t bitmap[WIDTH][HEIGHT] = {0,};
@@ -265,7 +259,7 @@ void draw_bitmap() {
         {
                 for (int j = 1; j < WIDTH - 1; j++)
                 {
-                        move(i, j)
+                        move(i, j);
 
                         int is_poison = 0;
 
@@ -310,8 +304,8 @@ void process_input()
         char ch = getch(); // 키보드 입력 받기
 
         // 전진을 위한 방향값 복사 변수
-        int8_t new_dx = head->x_dir; // 현재 x방향 복사
-        int8_t new_dy = head->y_dir; // 현재 y방향 복사
+        int8_t new_dx = snake_dir.x; // 현재 x방향 복사
+        int8_t new_dy = snake_dir.y; // 현재 y방향 복사
 
         // 방향키 파트, 화살표 입력 시퀀스는 '\033[' 뒤에 위,아래,오른쪽,왼쪽 순으로 A,B,C,D 가 붙는다.
 
@@ -374,14 +368,14 @@ void process_input()
         }
 
 
-        head->x_dir = new_dx; // 다음 방향 적용
-        head->y_dir = new_dy; // 
+        snake_dir.x = new_dx; // 다음 방향 적용
+        snake_dir.y = new_dy; // 
 }
 
 
 int check_self_collision() {
         for (int i = 0; i < snake_length; i ++) {
-                if (snake_x == tail_x[i] && snake_y == tail_y[i]) {
+                if (head->x == snake[i].x && head->y == snake[i].y) {
                         return 1;
                 }
         }
@@ -408,7 +402,7 @@ void move_snake() {
 /* draw the snake in the bitmap */
 void mark_snake() {
         for (int i = 0; i < snake_length; i ++) {
-                bitmap[tail_x[i]][tail_y[i]] = 1;
+                bitmap[snake[i].x][snake[i].y] = 1;
         }
 }
 
@@ -431,7 +425,7 @@ static bool free_cell() {
 void init_occupied() {
     // 모든 칸 false(비어 있음)로 초기화
     memset(occupied, 0, sizeof(occupied));
-    occupied[snake_y][snake_x] = true;
+    occupied[head->y][head->x] = true;
     // 뱀 머리 초기 위치 찍기
 }
 
@@ -449,8 +443,8 @@ void spawn_poison() {
             // occupied[py][px]가 true면 이미 뱀, 과일, 또는 이전 독이 차지 중인것
         } while (occupied[py][px]);
         // 안전한 좌표[px,py]를 찾았으면 저장
-        poison_x[i] = px;
-        poison_y[i] = py;
+        poison[i].x = px;
+        poison[i].y = py;
         // 해당 칸을 점유 처리해서 중복 배치를 방지
         occupied[py][px] = true;
     }
@@ -463,11 +457,11 @@ void update_fruit_and_poison() {
     // 뱀 길이 늘리기
     if (snake_length < MAX_LENGTH - 1) {
         // 꼬리 배열 끝에 새 머리 좌표 추가
-        tail_x[snake_length] = snake_x;
-        tail_y[snake_length] = snake_y;
+        snake[snake_length].x = head->x;
+        snake[snake_length].y = head->y;
         snake_length++;
         // 뱀 새 위치 점유
-        occupied[snake_y][snake_x] = true;
+        occupied[head->y][head->x] = true;
     }
 
     // 난이도에 따라 독 개수 증가
@@ -484,8 +478,8 @@ void update_fruit_and_poison() {
         fy = (rand() % (HEIGHT - 2)) + 1;
     } while (occupied[fy][fx]);
     
-    fruit_x = fx;
-    fruit_y = fy;
+    fruit.x = fx;
+    fruit.y = fy;
     occupied[fy][fx] = true; //과일 위치 찍기
 
     // 독도 새로 배치
@@ -496,7 +490,7 @@ void update_fruit_and_poison() {
 
 int check_poison_collision() {
     for (int i = 0; i < poison_count; i++) {
-        if (snake_x == poison_x[i] && snake_y == poison_y[i]) {
+        if (head->x == poison[i].x && head->y == poison[i].y) {
             return 1;
         }
     }
@@ -510,7 +504,7 @@ int check_gameover(){
     }
     // gameover due to self_collision
     for (int i=0; i<snake_length;i++){
-        if(head->x == snake[i]->x && head->y == snake[i]->y){
+        if(head->x == snake[i].x && head->y == snake[i].y){
             return 1;
         }
     }
@@ -590,12 +584,12 @@ int main() {
         while (1) {
                 int8_t fx = (rand() % (WIDTH - 2)) + 1;
                 int8_t fy = (rand() % (HEIGHT - 2)) + 1;
-                if (fruit_x == snake_x && fruit_y == snake_y) {
+                if (fruit.x == head->x && fruit.y == head->y) {
                         continue;
                 }
                 int overlaps_tail = 0;
                 for (int t = 0; t < snake_length; t ++) {
-                        if (fruit_x == tail_x[t] && fruit_y == tail_y[t]) {
+                        if (fruit.x == snake[t].x && fruit.y == snake[t].y) {
                                 overlaps_tail = 1;
                                 break;
                         }
@@ -603,8 +597,8 @@ int main() {
                 if (overlaps_tail) {
                         continue;
                 }
-                fruit_x = fx;
-                fruit_y = fy;
+                fruit.x = fx;
+                fruit.y = fy;
                 break;
         }
         if (poison_count > 0) {
@@ -621,7 +615,7 @@ int main() {
                 move_snake();
 
 
-                if (snake_x == fruit_x && snake_y == fruit_y) {
+                if (head->x == fruit.x && head->y == fruit.y) {
                         update_fruit_and_poison();
                 }
 
