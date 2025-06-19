@@ -169,7 +169,7 @@ void draw_title_screen() {
         int footer_x = (WIDTH - (int)strlen(footer)) / 2;
         mvprintw(HEIGHT - 2, footer_x, "%s", footer);
 
-        refresh;
+        refresh();
 }
 
 void draw_game_over_screen(int eaten) {
