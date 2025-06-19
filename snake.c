@@ -624,7 +624,7 @@ int main() {
                 usleep(100000); // sleep 100 ms
 
                 if(check_gameover()){
-                        draw_game_over_screen(eaten);
+                        draw_game_over_screen(fruit_eaten);
                         break;
                 }
         }
