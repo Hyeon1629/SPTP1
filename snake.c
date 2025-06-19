@@ -382,17 +382,22 @@ void move_snake() {
         head->x += snake_dir.x;
         head->y += snake_dir.y;
 }
-
+// 전역변수
+static bool occupied[HEIGHT][WIDTH];
 
 /* draw the snake in the bitmap */
 void mark_snake() {
-        for (int i = 0; i < snake_length; i ++) {
-                bitmap[snake[i].x][snake[i].y] = 1;
+    for (int i = 0; i < snake_length; i++) {
+        int x = snake[i].x;
+        int y = snake[i].y;
+        if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT) {
+            bitmap[y][x] = 1; // 올바른 순서로 수정
+            occupied[y][x] = true; // 점유 처리
         }
+    }
 }
 
-// 전역변수
-static bool occupied[HEIGHT][WIDTH];
+
 
 // 맵 내부에 빈 칸이 하나라도 있는지 확인
 static bool free_cell() {
